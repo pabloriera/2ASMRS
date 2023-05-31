@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.15)
-set(PROJECT_NAME "AE")
+set(PROJECT_NAME "2ASRMS")
 
 set(FORMATS Standalone)
 
@@ -58,7 +58,11 @@ set(SourceFiles
     Source/MainComponent.h)
 target_sources("${PROJECT_NAME}" PRIVATE ${SourceFiles})
 
-set(CMAKE_BUILD_TYPE Debug)
+if(NOT CMAKE_BUILD_TYPE)
+   set(CMAKE_BUILD_TYPE Release)
+endif()
+
+set(DONT_SET_USING_JUCE_NAMESPACE 0)
 
 set_target_properties("${PROJECT_NAME}" PROPERTIES FOLDER "")
 

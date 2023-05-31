@@ -1,4 +1,6 @@
 
+import json
+from pathlib import Path
 import numpy as np
 from utils import eps
 import torch
@@ -7,7 +9,7 @@ from torch import nn
 import pytorch_lightning as pl
 from torch.utils.data import DataLoader, random_split, TensorDataset, DataLoader
 from pytorch_lightning.loggers import TensorBoardLogger
-from utils import MetricTracker, MyEarlyStopping
+from utils import MetricTracker
 from pytorch_lightning.callbacks.early_stopping import EarlyStopping
 from pytorch_lightning import seed_everything
 from sklearn.decomposition import PCA
@@ -68,7 +70,8 @@ class AutoEncoder(pl.LightningModule):
         self.encoder = Encoder(self.encoder_layers)
         self.decoder = Decoder(
             (self.encoder_layers[-1],)+tuple(self.decoder_layers))
-        self.checkpoint_path = checkpoint_path
+        if checkpoint_path is not None:
+            self.load_checkpoint(checkpoint_path)
 
     def forward(self, x):
         x = self.encoder(x)
@@ -155,6 +158,7 @@ class AutoEncoder(pl.LightningModule):
     def train_model(self, loss_type, learning_rate, epochs=120, batch_size=512, log_path="tb_logs",
                     run_name="mymodel", accelerator='cpu', use_early_stopping=True):
 
+        self.run_name = run_name
         self.loss_type = loss_type
 
         self.learning_rate = learning_rate
@@ -176,17 +180,13 @@ class AutoEncoder(pl.LightningModule):
         metric_tracker = MetricTracker()
 
         early_stop_callback = EarlyStopping(
-            monitor="val_loss", min_delta=1e-10, patience=100, verbose=True, mode="min")
+            monitor="val_loss", min_delta=1e-6, patience=100, verbose=True, mode="min")
 
         callbacks = [metric_tracker]
         if use_early_stopping:
             callbacks += [early_stop_callback]
 
         
-
-        if (self.checkpoint_path is not None) and (self.seed is not None):
-            self.load_from_checkpoint(
-                resume_from_checkpoint=self.checkpoint_path)
 
         trainer = pl.Trainer(max_epochs=epochs, enable_model_summary=False, logger=logger,
                              callbacks=callbacks,
@@ -222,3 +222,41 @@ class AutoEncoder(pl.LightningModule):
         Zpca = pca.fit_transform(Z)
         # hay que agregar una capa linear al modelo que multiplique el input del decoder por pca.components_
         # self.decoder.layers.insert(0, nn.Linear(self.decoder_layers[0], self.decoder_layers[0]))
+
+    def export_decoder(self, pca_latent_space=False):
+        hps = self.hparams
+        if pca_latent_space:
+            Z = self.encoder(self.X).detach().cpu().numpy()
+            pca = PCA()
+            Zpca = pca.fit_transform(Z)
+            rangeZ = np.ceil(np.abs(Zpca).max(0))
+            decoder = PCADecoder(torch.tensor(pca.components_), self.decoder)
+        else:
+            Z = self.encoder(self.X).detach().cpu().numpy()
+            rangeZ = np.ceil(np.abs(Z).max(0))
+            decoder = self.decoder
+
+        output_path = Path("exported_models",f"{self.run_name}.pt")
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+
+        decoder.eval()
+        example = torch.zeros(1, hps['encoder_layers'][-1])
+        traced_script_module = torch.jit.trace(decoder, example)
+        traced_script_module.save(output_path)
+        
+        data = {
+            "parameters": {
+                        "latent_dim": hps['encoder_layers'][-1],
+                        "sClip": hps['db_min_norm'],
+                        "sr": hps['target_sampling_rate'],
+                        "win_length": hps['win_length'],
+                        "xMax": hps['Xmax'],
+                        "zRange": [{"max": int(v), "min": -int(v)} for v in rangeZ]
+                    },
+                    "model_path": str(Path("exported_models", f"{self.run_name}.pt").absolute()),
+                    "ztrack": Z.tolist()
+                }
+        output_path = Path('exported_models',f"{self.run_name}.json")
+
+        with open(output_path, 'w') as fp:
+            json.dump(data, fp)

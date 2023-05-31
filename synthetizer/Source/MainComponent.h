@@ -54,6 +54,8 @@ private:
     juce::ArrowButton *leftArrow = new juce::ArrowButton("left arrow", 0.5, juce::Colour());
     juce::ArrowButton *rightArrow = new juce::ArrowButton("right arrow", 0, juce::Colour());
 
+    // juce::ArrowButton *playButton = new juce::ArrowButton("play", 0, juce::Colour());
+
     int modelSelector = 0;
 
     //Autoencoder *mAutoencoder;

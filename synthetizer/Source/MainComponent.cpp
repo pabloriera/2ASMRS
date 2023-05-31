@@ -5,6 +5,7 @@ constexpr int DEFAULT_BUFFER_SIZE = 512;
 constexpr int slider_ccnum = 1;
 constexpr int xmax_ccnum = 16;
 constexpr int sclip_ccnum = 17;
+int ix= 0;
 
 //==============================================================================
 MainComponent::MainComponent()
@@ -18,11 +19,19 @@ MainComponent::MainComponent()
     openButton.onClick = [this]
     { openButtonClicked(); };
 
+    // playButton->onClick = [this]
+    // { 
+    //     models[modelSelector]->play(ix, mSliders);
+    //     ix++;
+    //     if (ix>models[modelSelector]->ztrack.size()-1)
+    //         ix=0;
+    // };
+
     rightArrow->onClick = [this]
     { 
         if (models.size() > 0){
             modelSelector = (modelSelector + 1) % (models.size());
-            for (int i = 0; i < models[modelSelector]->getInputDepth(); i++){
+            for (size_t i = 0; i < models[modelSelector]->getInputDepth(); i++){
                 mSliders[i]->setValue(models[modelSelector]->getInputTensorAt(i));
             }
         }
@@ -32,7 +41,7 @@ MainComponent::MainComponent()
     {
         if (models.size() > 0){
             modelSelector = (modelSelector - 1) % (models.size());
-            for (int i = 0; i < models[modelSelector]->getInputDepth(); i++){
+            for (size_t i = 0; i < models[modelSelector]->getInputDepth(); i++){
                 mSliders[i]->setValue(models[modelSelector]->getInputTensorAt(i));
             }
         }
@@ -41,6 +50,7 @@ MainComponent::MainComponent()
     addAndMakeVisible(&openButton);
     addAndMakeVisible(rightArrow);
     addAndMakeVisible(leftArrow);
+    // addAndMakeVisible(playButton);
 
     // X Max Slider
     xMaxSlider.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
@@ -176,6 +186,7 @@ void MainComponent::resized()
     openButton.setBounds(10, 10, getWidth() / 12, 20);
     rightArrow->setBounds(150, 200, getWidth() / 24, getWidth() / 24);
     leftArrow->setBounds(50, 200, getWidth() / 24, getWidth() / 24);
+    // playButton->setBounds(50, 350, getWidth() / 32, getWidth() / 32);
     xMaxSlider.setBounds(0, 60, 100, 100);
     sClipSlider.setBounds(100, 60, 100, 100);
 
@@ -250,7 +261,7 @@ void MainComponent::createSliders()
     //     return;
 
 
-    for (int i = 0; i < models[modelSelector]->getInputDepth(); ++i)
+    for (size_t i = 0; i < models[modelSelector]->getInputDepth(); ++i)
     {
         DBG("[MAINCOMPONENT] Creating slider: " << i);
 
@@ -276,8 +287,10 @@ void MainComponent::createSliders()
     mStorePreset.setToggleState(false, juce::dontSendNotification);
     addAndMakeVisible(mStorePreset);
 
-    for (int i = 0; i < 10; ++i)
+    for (size_t i = 0; i < 10; ++i)
     {
+        DBG("[MAINCOMPONENT] Creating preset: " << i);
+
         auto *tb = new juce::TextButton("Preset " + juce::String(i + 1));
 
         tb->setClickingTogglesState(false);
@@ -293,7 +306,7 @@ void MainComponent::createSliders()
         {
             if (mStorePreset.getToggleState())
             {
-                for (int s = 0; s < mSliders.size(); ++s)
+                for (size_t s = 0; s < mSliders.size(); ++s)
                 {
                     mSlidersMemory[i][s] = mSliders[s]->getValue();
                 }
@@ -301,7 +314,7 @@ void MainComponent::createSliders()
             }
             else
             {
-                for (int s = 0; s < mSliders.size(); ++s)
+                for (size_t s = 0; s < mSliders.size(); ++s)
                 {
                     mSliders[s]->setValue(mSlidersMemory[i][s]);
                 }

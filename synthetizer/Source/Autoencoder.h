@@ -33,6 +33,8 @@ struct Parameters
     {
         for (const auto &r : PZRange)
             zRange.push_back({r["min"], r["max"]});
+
+
     }
 
     float xMax;
@@ -40,6 +42,18 @@ struct Parameters
     unsigned int winLength;
     unsigned int latentDim;
     std::vector<SliderMinMax> zRange;
+};
+
+struct Ztrack
+{
+    Ztrack(const auto &PZtrack)
+    {
+        for (const auto &r : PZtrack)
+        {
+            z.push_back(r);
+        }
+    }
+    std::vector<float> z;
 };
 
 class Autoencoder
@@ -52,6 +66,10 @@ private:
     std::vector<torch::jit::IValue> mInputTensor;
 
     Parameters *mParams;
+    // Ztrack *ztrack;
+      // Create a vector of vectors to store the data.
+
+  
     float fftArray[FFT_SIZE];
     unsigned int rfftSize;
     unsigned int index;
@@ -63,6 +81,8 @@ private:
     juce::dsp::FFT mFFT = {12};
 
 public:
+    std::vector<std::vector<float>> ztrack;
+
     Autoencoder(const std::string &path)
     {
         std::ifstream ifs(path);
@@ -76,7 +96,19 @@ public:
             settings["parameters"]["latent_dim"],
             settings["parameters"]["zRange"]);
 
-        DBG("aaaaa" << settings["model_path"].get<std::string>());
+        // ztrack = new Ztrack(settings["ztrack"]);
+        // print content of ztrack
+        // for (const auto &r : ztrack->z)
+        //     DBG(r);
+
+        auto lists = settings["ztrack"];
+
+        for (auto list : lists) {
+            ztrack.push_back(list);
+        }
+
+
+        DBG(settings["model_path"].get<std::string>());
 
         try
         {
@@ -116,6 +148,21 @@ public:
     ~Autoencoder()
     {
         DBG("[AUTOENCODER] Destroying...");
+    }
+
+    void play(size_t ix, std::vector<juce::Slider *> &mSliders)
+    {
+        DBG("[AUTOENCODER] Play");
+        // Iterate over ztrack vector and change the slider value with the elements
+        // for (int i = 0; i < ztrack.size(); i++) 
+        // {
+            for (int dim = 0; dim < mParams->latentDim; dim++)
+            {
+                const float val = ztrack[ix][dim];
+                mInputTensor[0].toTensor().index_put_({0, (long int) dim}, val);
+                mSliders[dim]->setValue(val);
+            }
+        // }
     }
 
     void setInputLayers(const size_t pos, const float newValue)

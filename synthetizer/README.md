@@ -3,18 +3,9 @@
 Download the .zip file containing the libtorch (PyTorch C++ API) source and unzip in external folder
 
 ```console
-git submodule init
-git submodule update
 wget https://download.pytorch.org/libtorch/cpu/libtorch-cxx11-abi-shared-with-deps-1.13.1%2Bcpu.zip
+unzip libtorch-cxx11-abi-shared-with-deps-1.13.1+cpu.zip -d external/ 
 ```
-
-Manually adding submodules:
-```console
-git submodule init
-git add submodule https://github.com/nlohmann/json.git synthetizer/external/json 
-git add submodule https://github.com/juce-framework/JUCE.git synthetizer/external/JUCE
-```
-
 
 ## Linux dependencies
 
@@ -31,11 +22,11 @@ sudo apt install libasound2-dev libjack-jackd2-dev \
 
 ## Build 
 ```console
-cmake -Bbuild
-cmake --build build --config Release
+cmake -Bbuild # or cmake -Bbuild -DCMAKE_BUILD_TYPE=Debug
+cmake --build build
 ```
 
 ## Run
 ```console
-build/AE_artefacts/Debug/AE test_torchscript.json
+./build/2ASRMS_artefacts/Release/2ASRMS test_torchscript.json
 ```
