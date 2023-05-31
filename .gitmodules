@@ -1,0 +1,6 @@
+[submodule "synthetizer/external/json"]
+	path = synthetizer/external/json
+	url = https://github.com/nlohmann/json.git
+[submodule "synthetizer/external/JUCE"]
+	path = synthetizer/external/JUCE
+	url = https://github.com/juce-framework/JUCE.git
