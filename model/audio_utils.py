@@ -77,16 +77,31 @@ def save_specgram(specgram, hop_length, path):
     plt.colorbar()
     plt.savefig(Path(path, "predicted_spectrogram.png"))
 
+def save_latentscore(Z,  hop_length, sr, path):
+    plt.figure(figsize=(14, 4))
+    t = np.arange(0, Z.shape[0])*hop_length/sr
+    plt.plot(t, Z.cpu().numpy() + np.arange(Z.shape[1]) ,color='k')
+    plt.savefig(Path(path, "Z_latent_score.png"))
 
-def spectrogram2audio(Y, db_min_norm, phase, hop_length, win_length, in_db):
+
+def spectrogram2audio(Y, db_min_norm, phase, hop_length, win_length, in_db, griffinlim=False):
     if in_db:
         Y_ = torch.sqrt(10**((Y+db_min_norm)/10))*torch.exp(1j*phase)
     else:
         Y_ = Y*torch.exp(1j*phase)
-    return torch.istft(Y_.T,
-                       hop_length=hop_length,
-                       n_fft=win_length,
-                       window=torch.hann_window(win_length))
+
+    if griffinlim:
+        audio = torch.tensor(librosa.griffinlim(Y_.numpy().T,
+                                                hop_length=hop_length,
+                                                win_length=win_length,
+                                                window='hann'))
+    else:
+        audio = torch.istft(Y_.T,
+                            hop_length=hop_length,
+                            n_fft=win_length,
+                            window=torch.hann_window(win_length))
+
+    return audio
 
 
 def save_audio(Y, db_min_norm, phase, hop_length, win_length, samplerate, path, in_db):

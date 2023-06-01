@@ -225,14 +225,13 @@ class AutoEncoder(pl.LightningModule):
 
     def export_decoder(self, pca_latent_space=False):
         hps = self.hparams
+        Z = self.encoder(self.X).detach().cpu().numpy()
         if pca_latent_space:
-            Z = self.encoder(self.X).detach().cpu().numpy()
             pca = PCA()
             Zpca = pca.fit_transform(Z)
             rangeZ = np.ceil(np.abs(Zpca).max(0))
             decoder = PCADecoder(torch.tensor(pca.components_), self.decoder)
         else:
-            Z = self.encoder(self.X).detach().cpu().numpy()
             rangeZ = np.ceil(np.abs(Z).max(0))
             decoder = self.decoder
 

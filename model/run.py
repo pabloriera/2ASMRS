@@ -2,12 +2,12 @@ from fire import Fire
 from pathlib import Path
 import pandas as pd
 
-from audio_utils import get_spectrograms_from_audios, save_audio, save_specgram
+from audio_utils import get_spectrograms_from_audios, save_audio, save_latentscore, save_specgram
 from autoencoder import AutoEncoder
 
 
 def train(audio_path_list, target_sampling_rate=22050,
-          hop_length_ms=20,
+          hop_length_ms=23.219954648526078,
           encoder_layers=(512, 256, 128, 64, 32, 16, 8, 4),
           seed=42,
           db_min_norm=-60,
@@ -89,6 +89,8 @@ def train(audio_path_list, target_sampling_rate=22050,
     save_audio(predicted_specgram, db_min_norm, phases, hop_length,
                win_length, target_sampling_rate,  trainer.log_dir, spec_in_db)
 
+    Z = ae.encoder(X).detach().cpu().numpy()
+    save_latentscore(Z, hop_length, target_sampling_rate,  trainer.log_dir)
     # Export traced version model
     ae.export_decoder(pca_latent_space)
 
