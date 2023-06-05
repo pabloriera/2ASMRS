@@ -1,0 +1,17 @@
+## Midicontrol
+
+### Tidal
+
+```
+let perlin_freq = 1
+
+let midi_freq = 64
+
+p "latent perlin" 
+    $ stack [
+    ccv ( segment midi_freq $ fast perlin_freq $ range 0 127 $ perlin2 (-20) ) # ccn 1,
+    ccv ( segment midi_freq $ fast perlin_freq $ range 0 127 $ perlin2 (-10) ) # ccn 2,
+    ccv ( segment midi_freq $ fast perlin_freq $ range 0 127 $ perlin2 (10) ) # ccn 3,
+    ccv ( segment midi_freq $ fast perlin_freq $ range 0 127 $ perlin2 (20) ) # ccn 4
+]  # s "midi" 
+```
