@@ -80,7 +80,7 @@ def save_specgram(specgram, hop_length, path):
 def save_latentscore(Z,  hop_length, sr, path):
     plt.figure(figsize=(14, 4))
     t = np.arange(0, Z.shape[0])*hop_length/sr
-    plt.plot(t, Z.cpu().numpy() + np.arange(Z.shape[1]) ,color='k')
+    plt.plot(t, Z + np.arange(Z.shape[1]) ,color='k')
     plt.savefig(Path(path, "Z_latent_score.png"))
 
 

@@ -7,7 +7,8 @@ from autoencoder import AutoEncoder
 
 
 def train(audio_path_list, target_sampling_rate=22050,
-          hop_length_ms=23.219954648526078,
+		  hop_length_samples=512,
+          win_length_samples=2048,
           encoder_layers=(512, 256, 128, 64, 32, 16, 8, 4),
           seed=42,
           db_min_norm=-60,
@@ -24,8 +25,8 @@ def train(audio_path_list, target_sampling_rate=22050,
           pca_latent_space=False, 
           checkpoint_path=None):
 
-    hop_length = int(target_sampling_rate * hop_length_ms / 1000)
-    win_length = hop_length * 4
+    hop_length = hop_length_samples
+    win_length = win_length_samples
 
     print(f'hop_length: {hop_length}, win_length: {win_length}')
 
@@ -61,7 +62,6 @@ def train(audio_path_list, target_sampling_rate=22050,
         'db_min_norm': db_min_norm,
         'normalize_each_audio': normalize_each_audio,
         'target_sampling_rate': target_sampling_rate,
-        'hop_length_ms': hop_length_ms,
         'Xmax': Xmax,
 
     }
