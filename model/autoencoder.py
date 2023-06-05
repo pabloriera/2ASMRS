@@ -252,7 +252,7 @@ class AutoEncoder(pl.LightningModule):
                         "xMax": hps['Xmax'],
                         "zRange": [{"max": int(v), "min": -int(v)} for v in rangeZ]
                     },
-                    "model_path": str(Path("exported_models", f"{self.run_name}.pt").absolute()),
+                    "model_name": f"{self.run_name}.pt",
                     "ztrack": Z.tolist()
                 }
         output_path = Path('exported_models',f"{self.run_name}.json")

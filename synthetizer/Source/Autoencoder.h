@@ -17,8 +17,10 @@
 #include <nlohmann/json.hpp>
 #include <string>
 #include <utility>
+#include <filesystem>
 #include <vector>
 #define FFT_SIZE 8192
+namespace fs = std::filesystem;
 
 struct SliderMinMax
 {
@@ -85,6 +87,7 @@ public:
 
     Autoencoder(const std::string &path)
     {
+
         std::ifstream ifs(path);
         nlohmann::json settings;
         ifs >> settings;
@@ -108,13 +111,25 @@ public:
         }
 
 
-        DBG(settings["model_path"].get<std::string>());
+        DBG("[AUTOENCODER] Model name: " + settings["model_name"].get<std::string>());
+
+        fs::path p(path);
+        p.replace_filename(settings["model_name"].get<std::string>());
+
+        DBG("[AUTOENCODER] Model name: " + p.string());
 
         try
         {
-            // Deserialize the ScriptModule from a file using torch::jit::load().
-            
-            mAutoencoder = torch::jit::load(settings["model_path"].get<std::string>());
+
+            // TODO: check if file exists
+            fs::file_status s = fs::file_status{};
+            if(fs::status_known(s) ? fs::exists(s) : !fs::exists(p))
+                std::cerr << p.string() << " File does not exist\n";                
+                
+            // Deserialize the ScriptModule from a file using torch::jit::load().            
+            mAutoencoder = torch::jit::load(p.string());
+            // mAutoencoder = torch::jit::load("../model/exported_models/JL.pt");
+
             // Create a vector of inputs.
             mInputTensor.push_back(torch::ones({1, mParams->latentDim}));
 

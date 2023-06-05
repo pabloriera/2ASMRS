@@ -1,5 +1,7 @@
 # Audio Autoencoder for Sound Morphing in Realtime Synthetizer
 
+
+
 # Cloning
 
 Clone with submodules
@@ -19,6 +21,9 @@ python run.py
 ```console
 tensorboard --logdir=logs
 ```
+## Train on colab
+
+[Colab](https://colab.research.google.com/drive/1VMalSDqbO-idkTdtX47v7qRcLDioZ5GT#scrollTo=4zlUqBjwMCeu)
 
 # Synthetizer:
 
