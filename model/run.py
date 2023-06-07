@@ -1,6 +1,7 @@
 from fire import Fire
 from pathlib import Path
 import pandas as pd
+import torch
 
 from audio_utils import get_spectrograms_from_audios, save_audio, save_latentscore, save_specgram
 from autoencoder import AutoEncoder
@@ -82,9 +83,7 @@ def train(audio_path_list, target_sampling_rate=22050,
     pd.DataFrame(metrics_tracker.collection).astype(float).to_csv(
         Path(trainer.log_dir, 'metrics_history.csv'))
 
-    # ckpt_path = sorted(list(Path(path,"checkpoint").glob("*.ckpt")))[-1]
-    # print('Loading ckpt path',ckpt_path)
-    # ae.load_checkpoint(ckpt_path)
+    ae.export_decoder(pca_latent_space)
 
     predicted_specgram = ae.predict(X)*Xmax
 
@@ -92,10 +91,10 @@ def train(audio_path_list, target_sampling_rate=22050,
     save_audio(predicted_specgram, db_min_norm, phases, hop_length,
                win_length, target_sampling_rate,  trainer.log_dir, spec_in_db)
 
-    Z = ae.encoder(X).detach().cpu().numpy()
+    with torch.no_grad():
+        Z = ae.encoder(X).cpu().numpy()
     save_latentscore(Z, hop_length, target_sampling_rate,  trainer.log_dir)
-    # Export traced version model
-    ae.export_decoder(pca_latent_space)
+
 
 
 def main(path=None, **kwargs):

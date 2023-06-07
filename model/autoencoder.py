@@ -208,6 +208,7 @@ class AutoEncoder(pl.LightningModule):
         self.checkpoint_path = path
 
     def predict(self, specgram):
+        self.eval()
         S_hat = self(specgram)
         return S_hat
 
@@ -225,7 +226,8 @@ class AutoEncoder(pl.LightningModule):
 
     def export_decoder(self, pca_latent_space=False):
         hps = self.hparams
-        Z = self.encoder(self.X).detach().cpu().numpy()
+        with torch.no_grad():
+            Z = self.encoder(self.X).cpu().numpy()
         if pca_latent_space:
             pca = PCA()
             Zpca = pca.fit_transform(Z)
@@ -238,8 +240,9 @@ class AutoEncoder(pl.LightningModule):
         output_path = Path("exported_models",f"{self.run_name}.pt")
         output_path.parent.mkdir(parents=True, exist_ok=True)
 
-        decoder.eval()
+        decoder.to('cpu').eval()
         example = torch.zeros(1, hps['encoder_layers'][-1])
+        print('Tracing decoder')
         traced_script_module = torch.jit.trace(decoder, example)
         traced_script_module.save(output_path)
         
@@ -256,7 +259,6 @@ class AutoEncoder(pl.LightningModule):
                     "ztrack": Z.tolist()
                 }
         
-        Path("exported_models").mkdir(parents=True, exist_ok=True)
         output_path = Path('exported_models',f"{self.run_name}.json")
 
         with open(output_path, 'w') as fp:
