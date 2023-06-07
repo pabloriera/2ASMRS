@@ -255,6 +255,8 @@ class AutoEncoder(pl.LightningModule):
                     "model_name": f"{self.run_name}.pt",
                     "ztrack": Z.tolist()
                 }
+        
+        Path("exported_models").mkdir(parents=True, exist_ok=True)
         output_path = Path('exported_models',f"{self.run_name}.json")
 
         with open(output_path, 'w') as fp:

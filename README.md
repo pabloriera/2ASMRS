@@ -1,8 +1,6 @@
 # Audio Autoencoder for Sound Morphing in Realtime Synthetizer
 
-
-
-# Cloning
+# Install
 
 Clone with submodules
 
