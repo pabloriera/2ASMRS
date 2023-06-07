@@ -28,5 +28,5 @@ cmake --build build
 
 ## Run
 ```console
-./build/2ASRMS_artefacts/Release/2ASRMS test_torchscript.json
+./build/2ASRMS_artefacts/Release/2ASRMS
 ```

@@ -126,9 +126,8 @@ public:
             if(fs::status_known(s) ? fs::exists(s) : !fs::exists(p))
                 std::cerr << p.string() << " File does not exist\n";                
                 
-            // Deserialize the ScriptModule from a file using torch::jit::load().            
+            // Deserialize the TorchScript from a file using torch::jit::load().
             mAutoencoder = torch::jit::load(p.string());
-            // mAutoencoder = torch::jit::load("../model/exported_models/JL.pt");
 
             // Create a vector of inputs.
             mInputTensor.push_back(torch::ones({1, mParams->latentDim}));
