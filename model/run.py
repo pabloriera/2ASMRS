@@ -87,9 +87,13 @@ def train(audio_path_list, target_sampling_rate=22050,
 
     predicted_specgram = ae.predict(X)*Xmax
 
-    save_specgram(predicted_specgram, hop_length,  trainer.log_dir)
     save_audio(predicted_specgram, db_min_norm, phases, hop_length,
-               win_length, target_sampling_rate,  trainer.log_dir, spec_in_db)
+               win_length, target_sampling_rate,  trainer.log_dir, spec_in_db)    
+    
+    X = X[:2*60*target_sampling_rate//hop_length]
+    predicted_specgram = ae.predict(X)*Xmax
+    
+    save_specgram(predicted_specgram, hop_length,  trainer.log_dir)
 
     with torch.no_grad():
         Z = ae.encoder(X).cpu().numpy()
