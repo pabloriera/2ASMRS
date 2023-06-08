@@ -224,42 +224,46 @@ class AutoEncoder(pl.LightningModule):
         # hay que agregar una capa linear al modelo que multiplique el input del decoder por pca.components_
         # self.decoder.layers.insert(0, nn.Linear(self.decoder_layers[0], self.decoder_layers[0]))
 
-    def export_decoder(self, pca_latent_space=False):
+    def export_decoder(self):
         hps = self.hparams
         with torch.no_grad():
             Z = self.encoder(self.X).cpu().numpy()
-        if pca_latent_space:
-            pca = PCA()
-            Zpca = pca.fit_transform(Z)
-            rangeZ = np.ceil(np.abs(Zpca).max(0))
-            decoder = PCADecoder(torch.tensor(pca.components_), self.decoder)
-        else:
-            rangeZ = np.ceil(np.abs(Z).max(0))
-            decoder = self.decoder
-
-        output_path = Path("exported_models",f"{self.run_name}.pt")
-        output_path.parent.mkdir(parents=True, exist_ok=True)
-
-        decoder.to('cpu').eval()
-        example = torch.zeros(1, hps['encoder_layers'][-1])
-        print('Tracing decoder')
-        traced_script_module = torch.jit.trace(decoder, example)
-        traced_script_module.save(output_path)
         
-        data = {
-            "parameters": {
-                        "latent_dim": hps['encoder_layers'][-1],
-                        "sClip": hps['db_min_norm'],
-                        "sr": hps['target_sampling_rate'],
-                        "win_length": hps['win_length'],
-                        "xMax": hps['Xmax'],
-                        "zRange": [{"max": int(v), "min": -int(v)} for v in rangeZ]
-                    },
-                    "model_name": f"{self.run_name}.pt",
-                    "ztrack": Z.tolist()
-                }
-        
-        output_path = Path('exported_models',f"{self.run_name}.json")
+        for pca_latent_space in [False, True]:
+            if pca_latent_space:
+                pca = PCA()
+                Zpca = pca.fit_transform(Z)
+                rangeZ = np.ceil(np.abs(Zpca).max(0))
+                decoder = PCADecoder(torch.tensor(pca.components_), self.decoder)
+                pcalabel = 'pca'
+            else:
+                rangeZ = np.ceil(np.abs(Z).max(0))
+                decoder = self.decoder
+                pcalabel = ''
 
-        with open(output_path, 'w') as fp:
-            json.dump(data, fp)
+            output_path = Path("exported_models",f"{self.run_name}{pcalabel}.pt")
+            output_path.parent.mkdir(parents=True, exist_ok=True)
+
+            decoder.to('cpu').eval()
+            example = torch.zeros(1, hps['encoder_layers'][-1])
+            print('Tracing decoder')
+            traced_script_module = torch.jit.trace(decoder, example)
+            traced_script_module.save(output_path)
+            
+            data = {
+                "parameters": {
+                            "latent_dim": hps['encoder_layers'][-1],
+                            "sClip": hps['db_min_norm'],
+                            "sr": hps['target_sampling_rate'],
+                            "win_length": hps['win_length'],
+                            "xMax": hps['Xmax'],
+                            "zRange": [{"max": int(v), "min": -int(v)} for v in rangeZ]
+                        },
+                        "model_name": f"{self.run_name}.pt",
+                        "ztrack": Z.tolist()
+                    }
+            
+            output_path = Path('exported_models',f"{self.run_name}{pcalabel}.json")
+
+            with open(output_path, 'w') as fp:
+                json.dump(data, fp)

@@ -85,7 +85,7 @@ def train(audio_path_list, target_sampling_rate=22050,
     pd.DataFrame(metrics_tracker.collection).astype(float).to_csv(
         Path(trainer.log_dir, 'metrics_history.csv'))
 
-    ae.export_decoder(pca_latent_space)
+    ae.export_decoder()
 
     predicted_specgram = ae.predict(X)*Xmax
 
