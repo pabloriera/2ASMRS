@@ -43,6 +43,8 @@ def train(audio_path_list, target_sampling_rate=22050,
 
     if isinstance(encoder_layers, str):
         encoder_layers = tuple(map(int, encoder_layers[1:-1].split(',')))
+    elif isinstance(encoder_layers, list):
+        encoder_layers = tuple(encoder_layers)
 
     encoder_layers = (win_length//2+1,)+encoder_layers
     decoder_layers = encoder_layers[::-1][1:]
