@@ -23,7 +23,6 @@ def train(audio_path_list, target_sampling_rate=22050,
           log_path='logs',
           run_name='example',
           accelerator='cpu',
-          pca_latent_space=False, 
           checkpoint_path=None):
 
     hop_length = hop_length_samples
