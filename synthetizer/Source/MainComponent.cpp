@@ -393,7 +393,6 @@ void MainComponent::handleIncomingMidiMessage(juce::MidiInput *source, const juc
         {
             mSliders[s]->setValue(mSlidersMemory[i][s]);
         }
-
         const double mi = xMaxSlider.getMinimum();
         const double ma = xMaxSlider.getMaximum();
         const double newValue = juce::jmap<double>(message.getVelocity(), 0, 127, mi, ma);
@@ -434,6 +433,17 @@ void MainComponent::handleIncomingMidiMessage(juce::MidiInput *source, const juc
             const double ma = mSliders[sliderIndex]->getMaximum();
             const double newValue = juce::jmap<double>(message.getControllerValue(), 0, 127, mi, ma);
             mSliders[sliderIndex]->setValue(newValue);
+        }
+
+        if ((ccnum >= slider_ccnum+64) && (ccnum <= slider_ccnum + mSliders.size()+64))
+        {
+            const juce::MessageManagerLock mmLock;
+            const int sliderIndex = ccnum - slider_ccnum - 64;
+            const double mi = mSliders[sliderIndex]->getMinimum();
+            const double ma = mSliders[sliderIndex]->getMaximum();
+            const double newValue = juce::jmap<double>(message.getControllerValue(), 0, 127, mi/10.0, ma/10.0);
+            const double val = mSliders[sliderIndex]->getValue();
+            mSliders[sliderIndex]->setValue(val + newValue);
         }
     }
 
