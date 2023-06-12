@@ -96,7 +96,11 @@ private:
     static juce::String getMidiMessageDescription(const juce::MidiMessage &m)
     {
         if (m.isNoteOn())
+        {
+            
             return "Note on " + juce::MidiMessage::getMidiNoteName(m.getNoteNumber(), true, true, 3);
+        }
+            
         if (m.isNoteOff())
             return "Note off " + juce::MidiMessage::getMidiNoteName(m.getNoteNumber(), true, true, 3);
         if (m.isProgramChange())

@@ -385,6 +385,26 @@ void MainComponent::handleIncomingMidiMessage(juce::MidiInput *source, const juc
 {
     const juce::ScopedValueSetter<bool> scopedInputFlag(isAddingFromMidiInput, true);
 
+    if (message.isNoteOn())
+    {
+        DBG("[MAINCOMPONENT] Note on: " << message.getNoteNumber());
+        int i = message.getNoteNumber() - 36;
+        for (size_t s = 0; s < mSliders.size(); ++s)
+        {
+            mSliders[s]->setValue(mSlidersMemory[i][s]);
+        }
+
+        const double mi = xMaxSlider.getMinimum();
+        const double ma = xMaxSlider.getMaximum();
+        const double newValue = juce::jmap<double>(message.getVelocity(), 0, 127, mi, ma);
+        xMaxSlider.setValue(newValue);
+    }
+
+    if (message.isNoteOff())
+    {
+        xMaxSlider.setValue(0);
+    }
+
     if (message.isController())
     {
         const int ccnum = message.getControllerNumber();
