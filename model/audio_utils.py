@@ -108,4 +108,4 @@ def save_audio(Y, db_min_norm, phase, hop_length, win_length, samplerate, path, 
     audio = spectrogram2audio(Y, db_min_norm, phase,
                               hop_length, win_length, in_db)
     torchaudio.save(Path(path, 'reconstructed.mp3'), audio.reshape(
-        1, -1), samplerate, format='mp3', compression=320)
+        1, -1), samplerate, format='mp3', compression=torchaudio.io.CodecConfig(bit_rate=320))
