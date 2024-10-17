@@ -99,7 +99,7 @@ def spectrogram2audio(Y, db_min_norm, phase, hop_length, win_length, in_db, grif
         audio = torch.istft(Y_.T,
                             hop_length=hop_length,
                             n_fft=win_length,
-                            window=torch.hann_window(win_length))
+                            window=torch.hann_window(win_length).to(Y_.device))
 
     return audio
 
