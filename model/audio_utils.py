@@ -107,5 +107,10 @@ def spectrogram2audio(Y, db_min_norm, phase, hop_length, win_length, in_db, grif
 def save_audio(Y, db_min_norm, phase, hop_length, win_length, samplerate, path, in_db):
     audio = spectrogram2audio(Y, db_min_norm, phase,
                               hop_length, win_length, in_db)
-    torchaudio.save(Path(path, 'reconstructed.mp3'), audio.reshape(
-        1, -1), samplerate, format='mp3', compression=torchaudio.io.CodecConfig(bit_rate=320))
+    # Save as WAV instead of MP3 (soundfile backend supports WAV without extra parameters)
+    # Detach from computation graph before saving
+    torchaudio.save(
+        Path(path, 'reconstructed.wav'),
+        audio.reshape(1, -1).detach().cpu(),
+        samplerate
+    )

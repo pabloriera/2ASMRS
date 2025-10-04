@@ -8,7 +8,7 @@ from autoencoder import AutoEncoder
 
 
 def train(audio_path_list, target_sampling_rate=22050,
-		  hop_length_samples=512,
+          hop_length_samples=512,
           win_length_samples=2048,
           encoder_layers=(512, 256, 128, 64, 32, 16, 8, 4),
           seed=42,
@@ -48,8 +48,8 @@ def train(audio_path_list, target_sampling_rate=22050,
     encoder_layers = (win_length//2+1,)+encoder_layers
     decoder_layers = encoder_layers[::-1][1:]
 
-
-    ae = AutoEncoder(encoder_layers, decoder_layers, seed=seed, checkpoint_path=checkpoint_path)
+    ae = AutoEncoder(encoder_layers, decoder_layers,
+                     seed=seed, checkpoint_path=checkpoint_path)
     ae.load_data(X, y, Xmax, db_min_norm=db_min_norm, spec_in_db=spec_in_db)
     ae.split_data(validation_size=validation_size)
 
@@ -89,17 +89,16 @@ def train(audio_path_list, target_sampling_rate=22050,
     predicted_specgram = ae.predict(X)*Xmax
 
     save_audio(predicted_specgram, db_min_norm, phases, hop_length,
-               win_length, target_sampling_rate,  trainer.log_dir, spec_in_db)    
-    
+               win_length, target_sampling_rate,  trainer.log_dir, spec_in_db)
+
     X = X[:2*60*target_sampling_rate//hop_length]
     predicted_specgram = ae.predict(X)*Xmax
-    
+
     save_specgram(predicted_specgram, hop_length,  trainer.log_dir)
 
     with torch.no_grad():
         Z = ae.encoder(X).cpu().numpy()
     save_latentscore(Z, hop_length, target_sampling_rate,  trainer.log_dir)
-
 
 
 def main(path=None, **kwargs):
